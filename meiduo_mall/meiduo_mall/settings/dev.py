@@ -32,7 +32,7 @@ ALLOWED_HOSTS = ['*']
 
 
 # Application definition
-print(sys.path)
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -127,3 +127,28 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
 STATIC_URL = '/static/'
+
+print(sys.path)
+# redis 配置
+# django缓存设置(django的默认缓存为服务器缓存)
+# 这里是把缓存设为redis
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/0",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    },
+    "session": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}
+# 设置Django的session存储到缓存中
+SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+# 指定session存储到缓存空间的名称
+SESSION_CACHE_ALIAS = "session"
