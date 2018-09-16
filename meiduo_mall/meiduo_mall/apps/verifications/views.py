@@ -36,7 +36,7 @@ class SMSCodeView(APIView):
         pl.execute()
         # 发送
         sms_code_expire = constants.SMS_CODE_REDIS_EXPIRES // 60
-        sms_tasks.send_sms_code.delay(mobile, sms_code, sms_code_expire)
+        # sms_tasks.send_sms_code.delay(mobile, sms_code, sms_code_expire)
         # try:
         #     ccp = CCP()
         #     # 注意： 测试的短信模板编号为1
