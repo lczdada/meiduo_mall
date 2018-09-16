@@ -128,7 +128,6 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-print(sys.path)
 # redis 配置
 # django缓存设置(django的默认缓存为服务器缓存)
 # 这里是把缓存设为redis
@@ -194,7 +193,4 @@ LOGGING = {
     }
 }
 
-# import logging
-# logger = logging.getLogger('django')
-# logger.error('ERROR Message')
-# logger.info('INFO Message')
+AUTH_USER_MODEL = 'users.User'
