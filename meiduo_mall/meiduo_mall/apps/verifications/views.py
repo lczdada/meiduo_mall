@@ -1,7 +1,5 @@
 import random
 
-from django.shortcuts import render
-
 # Create your views here.
 
 from django_redis import get_redis_connection
@@ -9,9 +7,8 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from meiduo_mall.libs.yuntongxun.sms import CCP
 from verifications import constants
-
+from celery_tasks.sms import tasks as sms_tasks
 # 获取一个日志器
 import logging
 logger = logging.getLogger('django')
@@ -36,8 +33,10 @@ class SMSCodeView(APIView):
         pl = redis_conn.pipeline()
         pl.setex(f'sms_{mobile}', constants.SMS_CODE_REDIS_EXPIRES, sms_code)
         pl.setex(f'send_flag_{mobile}', constants.SEND_SMS_CODE_INTERVAL, 1)
+        pl.execute()
         # 发送
         sms_code_expire = constants.SMS_CODE_REDIS_EXPIRES // 60
+        sms_tasks.send_sms_code.delay(mobile, sms_code, sms_code_expire)
         # try:
         #     ccp = CCP()
         #     # 注意： 测试的短信模板编号为1
