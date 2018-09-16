@@ -1,0 +1,6 @@
+# 短信验证码有效期
+SMS_CODE_REDIS_EXPIRES = 300
+# 云通讯短信模板id
+SMS_CODE_TEMP_ID = 1
+# 发送短信的间隔
+SEND_SMS_CODE_INTERVAL = 60
