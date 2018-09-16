@@ -17,3 +17,15 @@ class UsernameCountView(APIView):
         }
 
         return Response(data)
+
+
+class MobileCountView(APIView):
+    def get(self, reuqest, mobile):
+        count = User.objects.filter(mobile=mobile).count()
+
+        data = {
+            'mobile': mobile,
+            'count': count
+        }
+
+        return Response(data)
