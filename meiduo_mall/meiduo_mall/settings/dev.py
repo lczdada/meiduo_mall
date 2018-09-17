@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/1.11/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.11/ref/settings/
 """
-
+import datetime
 import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -216,3 +216,24 @@ LOGGING = {
 }
 
 AUTH_USER_MODEL = 'users.User'
+
+REST_FRAMEWORK = {
+    # 配置默认的认证方式 base:账号密码验证
+    #session：session_id认证
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        # drf的这一阶段主要是做验证,middleware的auth主要是设置session和user到request对象
+        # 默认的验证是按照验证列表从上到下的验证
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+        "rest_framework_jwt.authentication.JSONWebTokenAuthentication",
+    )}
+
+
+JWT_AUTH = {
+    'JWT_REFRESH_EXPIRATION_DELTA': datetime.timedelta(days=1),
+'JWT_RESPONSE_PAYLOAD_HANDLER': 'users.utils.jwt_response_payload_handler',
+}
+
+AUTHENTICATION_BACKENDS = [
+    'users.utils.UsernameMobileAuthBackend',
+]
