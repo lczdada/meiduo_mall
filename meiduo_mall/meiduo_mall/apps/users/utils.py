@@ -15,6 +15,7 @@ def jwt_response_payload_handler(token, user=None, request=None):
         'username': user.username
     }
 
+
 def get_user_by_account(account):
     """
     根据帐号获取user对象

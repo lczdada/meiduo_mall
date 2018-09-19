@@ -30,7 +30,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -62,7 +61,7 @@ MIDDLEWARE = [
 CORS_ORIGIN_WHITELIST = (
     '127.0.0.1:8080',
     'localhost:8080',
-    'www.meiduo.site:8080'
+    'www.meiduo.site:8080',
 )
 
 CORS_ALLOW_CREDENTIALS = True  # 跨站请求允许携带cookies
@@ -87,7 +86,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'meiduo_mall.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 
@@ -101,7 +99,6 @@ DATABASES = {
         'POST': '3306'
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
@@ -121,7 +118,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/1.11/topics/i18n/
 
@@ -134,7 +130,6 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
@@ -166,7 +161,6 @@ CACHES = {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         }
     }
-
 
 }
 # 设置Django的session存储到缓存中
@@ -219,7 +213,7 @@ AUTH_USER_MODEL = 'users.User'
 
 REST_FRAMEWORK = {
     # 配置默认的认证方式 base:账号密码验证
-    #session：session_id认证
+    # session：session_id认证
     'DEFAULT_AUTHENTICATION_CLASSES': (
         # drf的这一阶段主要是做验证,middleware的auth主要是设置session和user到request对象
         # 默认的验证是按照验证列表从上到下的验证
@@ -228,10 +222,9 @@ REST_FRAMEWORK = {
         "rest_framework_jwt.authentication.JSONWebTokenAuthentication",
     )}
 
-
 JWT_AUTH = {
     'JWT_REFRESH_EXPIRATION_DELTA': datetime.timedelta(days=1),
-'JWT_RESPONSE_PAYLOAD_HANDLER': 'users.utils.jwt_response_payload_handler',
+    'JWT_RESPONSE_PAYLOAD_HANDLER': 'users.utils.jwt_response_payload_handler',
 }
 
 AUTHENTICATION_BACKENDS = [

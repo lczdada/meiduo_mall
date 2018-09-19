@@ -15,7 +15,7 @@ class CreateUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('id', 'username', 'password', 'password2', 'sms_code', 'mobile', 'allow')
+        fields = ('id', 'username', 'password', 'password2', 'sms_code', 'mobile', 'allow', 'token')
         extra_kwargs = {
             'username': {
                 'min_length': 5,
@@ -60,7 +60,7 @@ class CreateUserSerializer(serializers.ModelSerializer):
         # 判断短信验证码
         redis_conn = get_redis_connection('verify_codes')
         mobile = attrs['mobile']
-        real_sms_code = redis_conn.get(f'sms_{mobile}')  # bytes
+        real_sms_code = redis_conn.get('sms_%s' % mobile)  # bytes
         if real_sms_code is None:
             raise serializers.ValidationError('短信验证码已过期')
         # 对比

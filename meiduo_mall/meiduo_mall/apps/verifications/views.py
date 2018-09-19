@@ -23,16 +23,16 @@ class SMSCodeView(APIView):
         # 这里利用redis管道进行存储，省去每次连接数据库的麻烦
         redis_conn = get_redis_connection('verify_codes')
         # 判断是否在60秒内
-        send_flag = redis_conn.get(f'send_flag_{mobile}')
+        send_flag = redis_conn.get('send_flag_%s' % mobile)
         if send_flag:
             return Response({'message': '请求过于频繁'}, status=status.HTTP_400_BAD_REQUEST)
         # 生成短信验证码
-        sms_code = f'{random.randint(0, 999999):06}'
-        print(f'短信验证码为{sms_code}')
+        sms_code = 123456
+        print('123456')
         # 保存到redis
         pl = redis_conn.pipeline()
-        pl.setex(f'sms_{mobile}', constants.SMS_CODE_REDIS_EXPIRES, sms_code)
-        pl.setex(f'send_flag_{mobile}', constants.SEND_SMS_CODE_INTERVAL, 1)
+        pl.setex('sms_%s' % mobile, constants.SMS_CODE_REDIS_EXPIRES, sms_code)
+        pl.setex('send_flag_%s'% mobile, constants.SEND_SMS_CODE_INTERVAL, 1)
         pl.execute()
         # 发送
         sms_code_expire = constants.SMS_CODE_REDIS_EXPIRES // 60
