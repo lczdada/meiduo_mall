@@ -1,9 +1,38 @@
 import re
 
+from django.conf import settings
+from django.core.mail import send_mail
 from django_redis import get_redis_connection
 from rest_framework import serializers
 
+from celery_tasks.email.tasks import send_verify_email
 from users.models import User
+
+
+class EmailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('id', 'email')
+        extra_kwargs = {
+            'email': {
+                'required': True
+            }
+        }
+
+    def update(self, instance, validated_data):
+        """
+        设置用户邮箱并发送邮件
+        :param instance: 创建序列化器时传递的对象
+        :param validated_data:
+        """
+        # 设置用户的邮箱
+        email = validated_data['email']
+        instance.email = email
+        instance.save()
+        verify_url = instance.generate_verify_email_url()
+        # celery发送邮件
+        send_verify_email(email, verify_url)
+        return instance
 
 
 class CreateUserSerializer(serializers.ModelSerializer):

@@ -1,24 +1,71 @@
-from rest_framework.generics import CreateAPIView, GenericAPIView
+from rest_framework import status
+from rest_framework.generics import CreateAPIView, GenericAPIView, RetrieveAPIView, UpdateAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 
 
 from users.models import User
-from users.serializers import CreateUserSerializer, UserDetailSerializer
+from users.serializers import CreateUserSerializer, UserDetailSerializer, EmailSerializer
+
+
+# PUT /emails/verification/?token=xxx
+class VerifyEmailView(APIView):
+    """邮箱验证"""
+    def put(self, request):
+        # 获取token
+        token = request.query_params.get('token')
+        if not token:
+            return Response({'message': '缺少token'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # 验证token
+        user = User.check_verify_email_token(token)
+
+        if user is None:
+            return Response({'message': "链接信息无效"}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            user.email_active = True
+            user.save()
+            return Response({'message': 'OK'})
+
+
+# put /email
+class EmailView(UpdateAPIView):
+# class EmailView(GenericAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = EmailSerializer
+
+    def get_object(self):
+        return self.request.user
+
+    # def put(self, request):
+    #     # 获取用户
+    #     # user = self.request.user
+    #     user = self.get_object()
+    #     # 根据user
+    #     serializer = self.get_serializer(user, data=request.data)
+    #     # 对邮箱进行检验（email必传，格式）
+    #     serializer.is_valid(raise_exception=True)
+    #     # 设置用户的邮箱并发送邮件
+    #     serializer.save()
+
+        # return Response(serializer.data)
 
 
 # /user/
-class UserDetailView(GenericAPIView):
+class UserDetailView(RetrieveAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = UserDetailSerializer
 
-    def get(self, request):
-        # 获取用户信息
-        user = request.user
-        # 返回用户信息
-        serializer = self.get_serializer(user)
-        return Response(serializer.data)
+    def get_object(self):
+        return self.request.user
+
+
+    # def get(self, request):
+    #
+    #     user = self.get_object()
+    #     serializer = self.get_serializer(user)
+    #     return Response(serializer.data)
 
 
 class UsernameCountView(APIView):
