@@ -4,9 +4,88 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 
+from areas import constants
+from users.models import User, Address
+from users.serializers import CreateUserSerializer, UserDetailSerializer, EmailSerializer, UserAddressSerializer, \
+    AddressTitleSerializer
 
-from users.models import User
-from users.serializers import CreateUserSerializer, UserDetailSerializer, EmailSerializer
+
+class AppendAddressView(GenericAPIView):
+    serializer_class = UserAddressSerializer
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        # 获取请求的参数
+        # 将数据进行反序列化
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def get(self, request):
+        # 查询数据库的地址
+        user = self.request.user
+        addresses_set = user.addresses.filter(is_deleted=False)
+        # 序列化并返回
+        serializer = self.get_serializer(addresses_set, many=True)
+        return Response({
+            'user_id': user.id,
+            'default_address_id': user.default_address_id,
+            'limit': constants.USER_ADDRESS_COUNTS_LIMIT,
+            'addresses': serializer.data,
+        })
+
+
+class DeleteAddressView(GenericAPIView):
+    serializer_class = UserAddressSerializer
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, pk):
+        # 根据主键查询对应地址，删除
+        user = request.user
+        address = user.addresses.get(pk=pk)
+        address.is_deleted = True
+        address.save()
+        # 返回结果给前端
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def put(self, request, pk):
+        # 根据主键查询相应的地址，修改
+        user = request.user
+        address = user.addresses.get(pk=pk)
+        # 序列化对应数据并返回
+        serializer = self.get_serializer(address, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class ModifyAddressTitleView(GenericAPIView):
+    serializer_class = AddressTitleSerializer
+
+    def put(self, request, pk):
+        # 查询对应新闻地址修改
+        user = request.user
+        address = user.addresses.get(pk=pk)
+        # 序列化后返回
+        serializer = self.get_serializer(address, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class ModifyAddresssStatusView(GenericAPIView):
+    serializer_class = AddressTitleSerializer
+
+    def put(self, request, pk):
+        # 查询对应新闻地址修改
+        user = request.user
+        address = user.addresses.get(pk=pk)
+        # 序列化后返回
+        user.default_address = address
+        user.save()
+
+        return Response({'message': 'OK'}, status=status.HTTP_201_CREATED)
 
 
 # PUT /emails/verification/?token=xxx

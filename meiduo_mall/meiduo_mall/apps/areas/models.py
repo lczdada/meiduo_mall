@@ -13,5 +13,5 @@ class Area(models.Model):
         verbose_name = '行政区划'
         verbose_name_plural = '行政区划'
 
-    def _str_(self):
+    def __str__(self):
         return self.name

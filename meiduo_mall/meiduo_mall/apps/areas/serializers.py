@@ -17,3 +17,4 @@ class SubAreaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Area
         fields = ('id', 'name', 'subs')
+
