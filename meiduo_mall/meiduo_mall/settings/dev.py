@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'ckeditor',  # 富文本编辑器
     'ckeditor_uploader',  # 富文本编辑器上传图片模块
     'rest_framework',
+    'django_crontab',
     'pic.apps.PicConfig',
     # 注册子应用
     'verifications.apps.VerificationsConfig',
@@ -169,7 +170,15 @@ CACHES = {
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         }
-    }
+    },
+    "history": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/3",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    },
+
 
 }
 # 设置Django的session存储到缓存中
@@ -221,14 +230,17 @@ LOGGING = {
 AUTH_USER_MODEL = 'users.User'
 
 REST_FRAMEWORK = {
+    'EXCEPTIONS_HANDLER': 'meiduo_mall.utils.exceptions.exception_handler',
     # 配置默认的认证方式 base:账号密码验证
     # session：session_id认证
     'DEFAULT_AUTHENTICATION_CLASSES': (
         # drf的这一阶段主要是做验证,middleware的auth主要是设置session和user到request对象
         # 默认的验证是按照验证列表从上到下的验证
-        'rest_framework.authentication.BasicAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
         "rest_framework_jwt.authentication.JSONWebTokenAuthentication",
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+
+
     )}
 
 JWT_AUTH = {
@@ -283,3 +295,13 @@ CKEDITOR_CONFIGS = {
     },
 }
 CKEDITOR_UPLOAD_PATH = ''  # 上传图片保存路径，使用了FastDFS，所以此处设为''
+
+# 生成的静态html文件保存目录
+GENERATED_STATIC_HTML_FILES_DIR = os.path.join(os.path.dirname(os.path.dirname(BASE_DIR)), 'front_end_pc')
+
+# 定时任务
+CRONJOBS = [
+    # 每5分钟执行一次生成主页静态文件
+    ('*/1 * * * *', 'contents.crons.generate_static_index_html', '>> '+os.path.dirname(BASE_DIR)+'/logs/crontab.log')
+]
+

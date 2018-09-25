@@ -1,3 +1,4 @@
+from django_redis import get_redis_connection
 from rest_framework import status
 from rest_framework.generics import CreateAPIView, GenericAPIView, RetrieveAPIView, UpdateAPIView
 from rest_framework.response import Response
@@ -5,9 +6,31 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 
 from areas import constants
+from goods.models import SKU
+from goods.serializers import SKUSerializer
 from users.models import User, Address
 from users.serializers import CreateUserSerializer, UserDetailSerializer, EmailSerializer, UserAddressSerializer, \
-    AddressTitleSerializer
+    AddressTitleSerializer, AddUserBrosingHinstorySerializer
+
+
+class UserBrowsingHistoryView(CreateAPIView):
+    """用户浏览记录"""
+    serializer_class = AddUserBrosingHinstorySerializer
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        """获取"""
+        user_id = request.user.id
+        redis_conn = get_redis_connection('history')
+        history = redis_conn.lrange("history_%s" % user_id, 0, constants.USER_BROWSING_HISTORY_COUNTS_LIMIT - 1)
+        skus = []
+        for sku_id in history:
+            sku = SKU.objects.get(id=sku_id)
+            skus.append(sku)
+
+        s = SKUSerializer(skus, many=True)
+
+        return Response(s.data)
 
 
 class AppendAddressView(GenericAPIView):
