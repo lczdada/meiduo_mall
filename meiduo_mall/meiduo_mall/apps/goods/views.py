@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from rest_framework.filters import OrderingFilter
 from rest_framework.generics import GenericAPIView, ListAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -16,6 +17,9 @@ class SKUListView(ListAPIView):
     serializer_class = SKUSerializer
     # queryset = SKU.objects.filter(catogry_id=category_id, islanched=True)
 
+    # 排序
+    filter_backends = [OrderingFilter]
+    ordering_fields = ['create_time', 'price', 'sales']
     def get_queryset(self):
         """指定当前视图所使用的查询集"""
         category_id = self.kwargs['category_id']
