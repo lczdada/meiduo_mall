@@ -10,7 +10,17 @@ from rest_framework.views import APIView
 
 # GET /categories/(?P<category_id>\d+)/skus/
 from goods.models import SKU
-from goods.serializers import SKUSerializer
+from goods.serializers import SKUSerializer, SKUIndexSerializer
+
+from drf_haystack.viewsets import HaystackViewSet
+
+class SKUSearchViewSet(HaystackViewSet):
+    """
+    SKU搜索
+    """
+    index_models = [SKU]
+
+    serializer_class = SKUIndexSerializer
 
 
 class SKUListView(ListAPIView):
