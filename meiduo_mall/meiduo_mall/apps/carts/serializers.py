@@ -3,6 +3,11 @@ from rest_framework import serializers
 from goods.models import SKU
 
 
+class CartSelectAllSerialzier(serializers.Serializer):
+    """购物车全选"""
+    selected = serializers.BooleanField(label='全选')
+
+
 class CartDeleteSerializer(serializers.Serializer):
     sku_id = serializers.IntegerField(label='商品id', min_value=1)
 
@@ -13,6 +18,7 @@ class CartDeleteSerializer(serializers.Serializer):
             raise serializers.ValidationError('商品不存在')
 
         return value
+
 
 class CartSerializer(serializers.Serializer):
     sku_id = serializers.IntegerField(label='商品SKU编号')

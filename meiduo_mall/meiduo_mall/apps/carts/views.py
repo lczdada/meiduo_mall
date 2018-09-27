@@ -11,8 +11,65 @@ from rest_framework.views import APIView
 
 # /cart/
 from carts import constants
-from carts.serializers import CartSerializer, CartSKUSerializer, CartDeleteSerializer
+from carts.serializers import CartSerializer, CartSKUSerializer, CartDeleteSerializer, CartSelectAllSerialzier
 from goods.models import SKU
+
+
+class CartSelectAllView(APIView):
+    """购物车全选"""
+    def perform_authentication(self, request):
+        pass
+
+    def put(self, request):
+        # 获取勾选状态并进行校验
+        serializer = CartSelectAllSerialzier(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        selected = serializer.validated_data['selected']
+
+        # 2.获取user
+        try:
+            user = request.user
+        except Exception:
+            user = None
+
+        # 3. 设置购物车中的商品全部为勾选
+        if user and user.is_authenticated:
+            # 登录，修改redis
+            connection = get_redis_connection('carts')
+            cart_key = 'cart_%s' % user.id
+
+            # 获取用户购物车所有商品id
+            sku_ids = connection.hkeys(cart_key)
+
+            # 将sku_ids 添加到用户购物车勾选的商品数据中
+            cart_selected_key = 'cart_selected_%s' % user.id
+            if selected:
+                connection.sadd(cart_selected_key, *sku_ids)
+            else:
+                connection.srem(cart_selected_key, *sku_ids)
+
+            return Response({'message': 'OK'})
+        else:
+            response = Response({'message': 'OK'})
+
+            # 未登录， 设置cookie
+            cookie_cart = request.COOKIES.get('cart')
+
+            if not cookie_cart:
+                return Response
+            else:
+                cart_dict = pickle.loads(base64.b64decode(cookie_cart))
+
+            if not cart_dict:
+                return response
+
+            for sku_id in cart_dict.keys():
+                cart_dict[sku_id]['selected'] = selected
+
+            # 返回应答，全选成功
+            cookie_data = base64.b64encode(pickle.dumps(cart_dict)).decode()
+            response.set_cookie('cart', cookie_data, expires=constants.CART_COOKIE_EXPIRES)
+            return response
 
 
 class CartView(APIView):
@@ -34,7 +91,7 @@ class CartView(APIView):
             user = None
 
         # 删除用户的购物车记录
-        if user is not None and user.is_authenticated:
+        if user and user.is_authenticated:
             # 登录，删除redis的记录
             connection = get_redis_connection('carts')
             pl = connection.pipeline()
@@ -98,7 +155,7 @@ class CartView(APIView):
         except Exception:
             user = None
         # 3. 更新用户的购物车记录
-        if user is not None and user.is_authenticated:
+        if user and user.is_authenticated:
             # 3.1 如果用户已登录，更新redis中对应购物车记录
             connection = get_redis_connection('carts')
             # 在redis中更新对应sku_id商品的购物车count hash
@@ -163,7 +220,7 @@ class CartView(APIView):
             user = None
 
         # 2. 获取用户的购物车记录
-        if user is not None and user.is_authenticated:
+        if user and user.is_authenticated:
             # 2.1 如果用户已登录， 从redis中获取用户的redis
             redis_conn = get_redis_connection('carts')
             # 从redis中获取用户购物车记录中的sku_id
@@ -238,7 +295,7 @@ class CartView(APIView):
         except Exception:
             user = None
         # 2.保存用户的购物车记录
-        if user is not None and user.is_authenticated:
+        if user and user.is_authenticated:
             # 2.1 如果用户已登录，在redis中保护用户肚饿购物车记录
             # 获取redis链接
             redis_conn = get_redis_connection('carts')
