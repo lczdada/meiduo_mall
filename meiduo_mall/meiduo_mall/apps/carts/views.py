@@ -11,7 +11,7 @@ from rest_framework.views import APIView
 
 # /cart/
 from carts import constants
-from carts.serializers import CartSerializer, CartSKUSerializer
+from carts.serializers import CartSerializer, CartSKUSerializer, CartDeleteSerializer
 from goods.models import SKU
 
 
@@ -19,9 +19,60 @@ class CartView(APIView):
     def perform_authentication(self, request):
         pass
 
+    def delete(self, request):
+        """购物车记录删除"""
+        # 获取sku_id并进行校验
+        serializer = CartDeleteSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
 
+        sku_id = serializer.validated_data['sku_id']
 
+        # 获取user
+        try:
+            user = request.user
+        except Exception:
+            user = None
 
+        # 删除用户的购物车记录
+        if user is not None and user.is_authenticated:
+            # 登录，删除redis的记录
+            connection = get_redis_connection('carts')
+            pl = connection.pipeline()
+
+            # 删除购物车记录中对应的商品id和count hash
+            cart_key = 'cart_%s' % user.id
+            # hdel(key, *fields): 删除hash中的指定属性和值，如果属性field不存在，直接忽略
+            pl.hdel(cart_key, sku_id)
+
+            # 删除购物车记录对应商品勾选状态
+            cart_selected_key = 'cart_selected_%s' % user.id
+
+            # srem(key, *values): 删除set中指定元素，如果元素不存在，直接忽略
+            pl.srem(cart_selected_key, sku_id)
+
+            pl.execute()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        else:
+            # 未登录删除cookie中的记录
+            response = Response(status=status.HTTP_204_NO_CONTENT)
+            cookie_cart = request.COOKIES.get('cart')
+            if cookie_cart is None:
+                return response
+            # 解析购物车中的数据
+            cart_dict = pickle.loads(base64.b64decode(cookie_cart))
+
+            if not cart_dict:
+                return response
+
+            # 删除购物车对应商品记录
+            if sku_id in cart_dict:
+                del cart_dict[sku_id]
+                cookie_data = base64.b64encode(pickle.dumps(cart_dict)).decode()
+
+                # 设置购物车cookie信息
+                response.set_cookie('cart', cookie_data, expires=constants.CART_COOKIE_EXPIRES)
+
+            return response
 
     def put(self, request):
         """
