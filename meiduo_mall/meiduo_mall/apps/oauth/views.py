@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_jwt.settings import api_settings
 
+from carts.utils import merge_cart_cookie_to_redis
 from meiduo_mall.utils.exceptions import logger
 from oauth.models import OAuthQQUser
 from oauth.serializers import OAuthQQUserSerializer
@@ -61,5 +62,13 @@ class QQAuthUserView(CreateAPIView):
             token = jwt_encode_handler(payload)
 
             response = Response({'token': token, 'user_id': user.id, 'username': user.username})
+            response = merge_cart_cookie_to_redis(request, user, response)
 
             return response
+
+    def post(self, request, *args, **kwargs):
+        response = super().post(request, *args, **kwargs)
+
+        # 合并购物车
+        response = merge_cart_cookie_to_redis(request, self.user, response)
+        return response
