@@ -46,8 +46,8 @@ class CartSerializer(serializers.Serializer):
 class CartSKUSerializer(serializers.ModelSerializer):
     """购物车商品序列化器类"""
     count = serializers.IntegerField(label='商品数量')
-    selected = serializers.BooleanField(label='勾选状态')
+
 
     class Meta:
         model = SKU
-        fields = ('id', 'name', 'price', 'default_image_url', 'count', 'selected')
+        fields = ('id', 'name', 'price', 'default_image_url', 'count')
