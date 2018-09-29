@@ -175,7 +175,8 @@ class CartView(APIView):
                 # 取消勾选
                 # srem(key, *members): 从set集合移除元素，有则移除，无则忽略
                 pl.srem(cart_selected_key, sku_id)
-            pl.excute()
+            pl.execute()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             response = Response(serializer.data)
             # 3.2 如果用户未登录，更新cookie中对应购物车记录

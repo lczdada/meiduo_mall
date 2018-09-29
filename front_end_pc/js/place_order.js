@@ -72,7 +72,7 @@ var vm = new Vue({
             localStorage.clear();
             location.href = '/login.html';
         },
-        // 提交订单
+ // 提交订单
         on_order_submit: function(){
             if (this.order_submitting == false){
                 this.order_submitting = true;
@@ -86,10 +86,9 @@ var vm = new Vue({
                         responseType: 'json'
                     })
                     .then(response => {
-                        alert('订单创建成功!');
-                        // location.href = '/order_success.html?order_id='+response.data.order_id
-                        //     +'&amount='+this.payment_amount
-                        //     +'&pay='+this.pay_method;
+                        location.href = '/order_success.html?order_id='+response.data.order_id
+                            +'&amount='+this.payment_amount
+                            +'&pay='+this.pay_method;
                     })
                     .catch(error => {
                         this.order_submitting = false;

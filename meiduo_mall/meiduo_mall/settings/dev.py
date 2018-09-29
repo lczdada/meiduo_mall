@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'contents.apps.ContentsConfig',
     'carts.apps.CartsConfig',
     'orders.apps.OrdersConfig',
+    'payment.apps.PaymentConfig',
     'corsheaders',
 
 ]
@@ -257,7 +258,7 @@ REST_FRAMEWORK = {
 }
 
 JWT_AUTH = {
-    'JWT_REFRESH_EXPIRATION_DELTA': datetime.timedelta(days=1),
+    'JWT_EXPIRATION_DELTA': datetime.timedelta(days=1),
     'JWT_RESPONSE_PAYLOAD_HANDLER': 'users.utils.jwt_response_payload_handler',
 }
 
@@ -329,3 +330,8 @@ HAYSTACK_CONNECTIONS = {
 
 # 当添加、修改、删除数据时，自动生成索引
 HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.RealtimeSignalProcessor'
+
+# 支付宝
+ALIPAY_APPID = "2016092100565570"
+ALIPAY_URL = "https://openapi.alipaydev.com/gateway.do"
+ALIPAY_DEBUG = True
