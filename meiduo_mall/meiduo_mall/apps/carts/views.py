@@ -56,7 +56,7 @@ class CartSelectAllView(APIView):
             cookie_cart = request.COOKIES.get('cart')
 
             if not cookie_cart:
-                return Response
+                return response
             else:
                 cart_dict = pickle.loads(base64.b64decode(cookie_cart))
 

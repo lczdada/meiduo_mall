@@ -77,8 +77,8 @@ var vm = new Vue({
             var count = this.cart[index].count + 1;
             this.update_count(index, count);
         },
-        // 购物车全选
-        on_selected_all: function(){
+            // 购物车全选
+    on_selected_all: function(){
             var selected = !this.selected_all;
             axios.put(this.host + '/cart/selection/', {
                     selected
